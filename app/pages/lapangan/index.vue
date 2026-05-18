@@ -239,6 +239,7 @@ async function cancelClaim(scheduleId: string) {
         </NuxtLink>
       </div>
     </div>
+  </div>
 
     <!-- Jadwal Saya -->
     <div class="px-4 mt-5">
