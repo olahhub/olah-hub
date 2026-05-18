@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Fix autofill browser */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1f2937;
+  -webkit-box-shadow: 0 0 0px 1000px white inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Fix teks pudar di tabel dan komponen */
+table td,
+table th {
+  color: #1f2937 !important;
+}
+
+/* Fix warna teks di dalam card */
+.bg-white p,
+.bg-white span,
+.bg-white td {
+  color: #1f2937;
+}
+
+/* Fix badge dan status text */
+[class*="rounded-lg"] {
+  color: inherit;
+}
