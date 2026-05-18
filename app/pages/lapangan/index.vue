@@ -9,7 +9,7 @@ const { data: claimedSchedules } = await useAsyncData('claimed-schedules', async
   if (!user) return []
   const { data } = await supabase
     .from('pickup_schedules')
-    .select('*, members(full_name, address)')
+    .select('*, members(full_name, address, location_lat, location_lng, distance_km)')
     .eq('kurir_id', user.id)
     .eq('status', 'claimed')
     .order('scheduled_date', { ascending: true })
@@ -34,7 +34,7 @@ const { data: monthlyData } = await useAsyncData('monthly-volume', async () => {
 const { data: openSchedules, refresh: refreshOpen } = await useAsyncData('open-schedules', async () => {
   const { data } = await supabase
     .from('pickup_schedules')
-    .select('*, members(full_name, address)')
+    .select('*, members(full_name, address, location_lat, location_lng, distance_km)')
     .eq('status', 'open')
     .order('scheduled_date', { ascending: true })
   return data ?? []
@@ -53,6 +53,67 @@ function isClaimable(scheduledDate: string) {
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })
 }
+
+// Inisialisasi mini map untuk setiap jadwal yang punya koordinat
+async function initMiniMap(scheduleId: string, lat: number, lng: number, name: string) {
+  await nextTick()
+  await new Promise(resolve => setTimeout(resolve, 200))
+
+  const L = (window as any).L
+  if (!L) return
+
+  const mapId = `map-${scheduleId}`
+  const el = document.getElementById(mapId)
+  if (!el) return
+
+  // Hapus map lama jika ada
+  const existingMap = (window as any)[`_map_${scheduleId}`]
+  if (existingMap) { existingMap.remove(); delete (window as any)[`_map_${scheduleId}`] }
+
+  const map = L.map(mapId, {
+    zoomControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    touchZoom: false,
+  }).setView([lat, lng], 15)
+
+  ;(window as any)[`_map_${scheduleId}`] = map
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: ''
+  }).addTo(map)
+
+  const icon = L.divIcon({
+    html: `<div style="background:#16a34a;width:14px;height:14px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    className: ''
+  })
+
+  L.marker([lat, lng], { icon }).addTo(map)
+    .bindPopup(`<b style="font-size:12px">${name}</b>`)
+    .openPopup()
+}
+
+// Watch penawaran jadwal — init peta untuk yang punya koordinat
+watch(openSchedules, async (schedules) => {
+  if (!schedules) return
+  for (const s of schedules) {
+    if (s.members?.location_lat && s.members?.location_lng) {
+      await initMiniMap(s.id, s.members.location_lat, s.members.location_lng, s.members.full_name)
+    }
+  }
+}, { immediate: true })
+
+watch(claimedSchedules, async (schedules) => {
+  if (!schedules) return
+  for (const s of schedules) {
+    if (s.members?.location_lat && s.members?.location_lng) {
+      await initMiniMap(s.id + '-claimed', s.members.location_lat, s.members.location_lng, s.members.full_name)
+    }
+  }
+}, { immediate: true })
 
 const claimLoading = ref<string | null>(null)
 const claimError = ref('')
@@ -178,6 +239,7 @@ async function cancelClaim(scheduleId: string) {
         </NuxtLink>
       </div>
     </div>
+  </div>
 
     <!-- Jadwal Saya -->
     <div class="px-4 mt-5">
@@ -194,39 +256,44 @@ async function cancelClaim(scheduleId: string) {
         <div
           v-for="s in claimedSchedules"
           :key="s.id"
-          class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm"
+          class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
         >
-          <div class="flex items-start justify-between mb-3">
-            <div>
+          <!-- Mini Map -->
+          <div
+            v-if="s.members?.location_lat && s.members?.location_lng"
+            :id="`map-${s.id}-claimed`"
+            style="height:120px;width:100%;z-index:0"
+          />
+
+          <div class="p-4">
+            <div class="flex items-start justify-between mb-1">
               <p class="font-bold text-gray-800">{{ s.members?.full_name }}</p>
-              <p class="text-xs text-gray-400 mt-0.5">{{ s.members?.address ?? 'Alamat tidak ada' }}</p>
+              <span class="text-xs px-2 py-1 rounded-lg font-medium" style="background:#fffbeb;color:#d97706">Diambil</span>
             </div>
-            <span class="text-xs px-2 py-1 rounded-lg font-medium" style="background:#fffbeb;color:#d97706">
-              Diambil
-            </span>
-          </div>
-          <p class="text-xs font-medium mb-3" style="color:#16a34a">
-            📅 {{ formatDate(s.scheduled_date) }}
-            <span v-if="s.scheduled_time">· {{ s.scheduled_time.slice(0,5) }}</span>
-          </p>
-          <p v-if="s.est_volume_liter" class="text-xs text-gray-500 mb-3">Est. {{ s.est_volume_liter }} L</p>
+            <p class="text-xs text-gray-400 mt-0.5 mb-2">{{ s.members?.address ?? 'Alamat tidak ada' }}</p>
+            <p class="text-xs font-medium mb-3" style="color:#16a34a">
+              📅 {{ formatDate(s.scheduled_date) }}
+              <span v-if="s.scheduled_time">· {{ s.scheduled_time.slice(0,5) }}</span>
+            </p>
+            <p v-if="s.est_volume_liter" class="text-xs text-gray-500 mb-3">Est. {{ s.est_volume_liter }} L</p>
 
-          <p v-if="cancelError" class="text-xs text-red-500 mb-2">{{ cancelError }}</p>
+            <p v-if="cancelError" class="text-xs text-red-500 mb-2">{{ cancelError }}</p>
 
-          <div class="grid grid-cols-2 gap-2">
-            <button
-              style="background-color:#16a34a;color:white;padding:10px;border-radius:12px;font-size:13px;font-weight:600;border:none;cursor:pointer;"
-              @click="navigateTo(`/lapangan/pickup/${s.id}`)"
-            >
-              Lapor Pickup
-            </button>
-            <button
-              :disabled="cancelLoading === s.id"
-              style="background-color:white;color:#ef4444;padding:10px;border-radius:12px;font-size:13px;font-weight:600;border:1px solid #fca5a5;cursor:pointer;"
-              @click="cancelClaim(s.id)"
-            >
-              {{ cancelLoading === s.id ? 'Membatalkan...' : 'Batalkan' }}
-            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                style="background-color:#16a34a;color:white;padding:10px;border-radius:12px;font-size:13px;font-weight:600;border:none;cursor:pointer;"
+                @click="navigateTo(`/lapangan/pickup/${s.id}`)"
+              >
+                Lapor Pickup
+              </button>
+              <button
+                :disabled="cancelLoading === s.id"
+                style="background-color:white;color:#ef4444;padding:10px;border-radius:12px;font-size:13px;font-weight:600;border:1px solid #fca5a5;cursor:pointer;"
+                @click="cancelClaim(s.id)"
+              >
+                {{ cancelLoading === s.id ? 'Membatalkan...' : 'Batalkan' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -245,19 +312,52 @@ async function cancelClaim(scheduleId: string) {
         <p class="text-sm text-gray-400">Tidak ada penawaran saat ini</p>
       </div>
 
-      <div v-else class="space-y-3">
+    <div v-else class="space-y-3">
+      <div
+        v-for="s in openSchedules"
+        :key="s.id"
+        class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+      >
+        <!-- Mini Map -->
         <div
-          v-for="s in openSchedules"
-          :key="s.id"
-          class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm"
+          v-if="s.members?.location_lat && s.members?.location_lng"
+          :id="`map-${s.id}`"
+          style="height:140px;width:100%;z-index:0"
+        />
+        <div
+          v-else
+          class="flex items-center justify-center bg-gray-50"
+          style="height:80px"
         >
-          <p class="font-bold text-gray-800">{{ s.members?.full_name }}</p>
-          <p class="text-xs text-gray-400 mt-0.5 mb-2">{{ s.members?.address ?? 'Alamat tidak ada' }}</p>
+          <div class="text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mx-auto text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            </svg>
+            <p class="text-xs text-gray-400">Lokasi belum diset</p>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <div class="flex items-start justify-between mb-1">
+            <p class="font-bold text-gray-800">{{ s.members?.full_name }}</p>
+            <span v-if="s.members?.distance_km" class="text-xs px-2 py-1 rounded-lg font-medium"
+              :style="s.members.distance_km < 5 ? 'background:#f9fafb;color:#9ca3af' : s.members.distance_km < 12 ? 'background:#fffbeb;color:#d97706' : 'background:#f0fdf4;color:#16a34a'"
+            >
+              {{ s.members.distance_km }} km
+            </span>
+          </div>
+          <p class="text-xs text-gray-400 mb-2">{{ s.members?.address ?? 'Alamat tidak ada' }}</p>
           <p class="text-xs font-medium mb-2" style="color:#16a34a">
             📅 {{ formatDate(s.scheduled_date) }}
             <span v-if="s.scheduled_time">· {{ s.scheduled_time.slice(0,5) }}</span>
           </p>
-          <p v-if="s.est_volume_liter" class="text-xs text-gray-500 mb-3">Est. {{ s.est_volume_liter }} L</p>
+          <div class="flex items-center justify-between mb-3">
+            <p v-if="s.est_volume_liter" class="text-xs text-gray-500">Est. {{ s.est_volume_liter }} L</p>
+            <p v-if="s.members?.distance_km" class="text-xs font-medium"
+              :style="s.members.distance_km < 5 ? 'color:#9ca3af' : 'color:#16a34a'"
+            >
+            </p>
+          </div>
 
           <button
             v-if="isClaimable(s.scheduled_date)"
