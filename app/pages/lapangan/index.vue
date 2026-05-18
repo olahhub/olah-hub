@@ -356,7 +356,6 @@ async function cancelClaim(scheduleId: string) {
             <p v-if="s.members?.distance_km" class="text-xs font-medium"
               :style="s.members.distance_km < 5 ? 'color:#9ca3af' : 'color:#16a34a'"
             >
-              Jasa: Rp{{ s.members.distance_km < 5 ? '500' : s.members.distance_km < 12 ? '600' : '700' }}/L
             </p>
           </div>
 
