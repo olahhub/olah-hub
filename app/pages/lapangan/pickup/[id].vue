@@ -21,7 +21,7 @@ const { data: activePrice } = await useAsyncData('active-price', async () => {
   if (!schedule.value?.member_id) return null
   const { data } = await supabase
     .from('buy_price_configs')
-    .select('price_per_liter')
+    .select('price_per_kg')
     .eq('member_id', schedule.value.member_id)
     .order('effective_date', { ascending: false })
     .limit(1)
@@ -30,7 +30,7 @@ const { data: activePrice } = await useAsyncData('active-price', async () => {
 })
 
 const form = reactive({
-  actual_volume_liter: '',
+  actual_volume_kg: '',
   notes: '',
 })
 
@@ -41,8 +41,8 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 const totalPaid = computed(() => {
-  if (!form.actual_volume_liter || !activePrice.value) return 0
-  return Number(form.actual_volume_liter) * Number(activePrice.value.price_per_liter)
+  if (!form.actual_volume_kg || !activePrice.value) return 0
+  return Number(form.actual_volume_kg) * Number(activePrice.value.price_per_kg)
 })
 
 function formatRupiah(amount: number) {
@@ -83,7 +83,7 @@ function removePhoto(index: number) {
 }
 
 async function submit() {
-  if (!form.actual_volume_liter) {
+  if (!form.actual_volume_kg) {
     errorMsg.value = 'Volume wajib diisi'
     return
   }
@@ -107,8 +107,8 @@ async function submit() {
         schedule_id: route.params.id,
         kurir_id: user?.id,
         member_id: schedule.value?.member_id,
-        actual_volume_liter: Number(form.actual_volume_liter),
-        price_per_liter: Number(activePrice.value.price_per_liter),
+        actual_volume_kg: Number(form.actual_volume_kg),
+        price_per_kg: Number(activePrice.value.price_per_kg),
         total_paid: totalPaid.value,
         kurir_lat: gpsCoords.value?.lat ?? null,
         kurir_lng: gpsCoords.value?.lng ?? null,
@@ -187,7 +187,7 @@ async function submit() {
       <p class="text-xs text-green-600 mt-1">
         Harga beli:
         <strong>
-          {{ activePrice ? formatRupiah(activePrice.price_per_liter) + '/L' : 'Belum diset' }}
+          {{ activePrice ? formatRupiah(activePrice.price_per_kg) + '/L' : 'Belum diset' }}
         </strong>
       </p>
     </div>
@@ -206,13 +206,13 @@ async function submit() {
       <!-- Volume -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">
-          Volume Aktual (Liter) <span class="text-red-500">*</span>
+          Volume Aktual (kg) <span class="text-red-500">*</span>
         </label>
         <input
-          v-model="form.actual_volume_liter"
+          v-model="form.actual_volume_kg"
           type="number"
           step="0.1"
-          placeholder="Masukkan volume dalam liter"
+          placeholder="Masukkan volume dalam kg"
           class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
       </div>
@@ -222,7 +222,7 @@ async function submit() {
         <p class="text-xs text-blue-500">Total yang harus dibayar ke member</p>
         <p class="text-2xl font-bold text-blue-700">{{ formatRupiah(totalPaid) }}</p>
         <p class="text-xs text-blue-400 mt-1">
-          {{ form.actual_volume_liter }} L × {{ formatRupiah(activePrice?.price_per_liter ?? 0) }}
+          {{ form.actual_volume_kg }} L × {{ formatRupiah(activePrice?.price_per_kg ?? 0) }}
         </p>
       </div>
 

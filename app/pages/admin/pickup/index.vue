@@ -61,7 +61,7 @@ const modalLoading = ref(false)
 const modalError = ref('')
 const form = reactive({
   member_id: '', scheduled_date: new Date().toISOString().split('T')[0],
-  scheduled_time: '', est_volume_liter: '', notes: '',
+  scheduled_time: '', est_volume_kg: '', notes: '',
 })
 
 async function submitJadwal() {
@@ -72,24 +72,24 @@ async function submitJadwal() {
     member_id: form.member_id,
     scheduled_date: form.scheduled_date,
     scheduled_time: form.scheduled_time || null,
-    est_volume_liter: form.est_volume_liter ? Number(form.est_volume_liter) : null,
+    est_volume_kg: form.est_volume_kg ? Number(form.est_volume_kg) : null,
     notes: form.notes || null,
     status: 'open',
     created_by: user?.id,
   })
   if (error) { modalError.value = 'Gagal menyimpan'; modalLoading.value = false; return }
   showModal.value = false
-  Object.assign(form, { member_id: '', scheduled_date: new Date().toISOString().split('T')[0], scheduled_time: '', est_volume_liter: '', notes: '' })
+  Object.assign(form, { member_id: '', scheduled_date: new Date().toISOString().split('T')[0], scheduled_time: '', est_volume_kg: '', notes: '' })
   modalLoading.value = false
   refresh()
 }
 
 // Modal Edit
 const showEditModal = ref(false)
-const editForm = reactive({ id: '', member_id: '', scheduled_date: '', scheduled_time: '', est_volume_liter: '', notes: '' })
+const editForm = reactive({ id: '', member_id: '', scheduled_date: '', scheduled_time: '', est_volume_kg: '', notes: '' })
 
 function openEdit(s: any) {
-  Object.assign(editForm, { id: s.id, member_id: s.member_id, scheduled_date: s.scheduled_date, scheduled_time: s.scheduled_time?.slice(0,5) ?? '', est_volume_liter: s.est_volume_liter ?? '', notes: s.notes ?? '' })
+  Object.assign(editForm, { id: s.id, member_id: s.member_id, scheduled_date: s.scheduled_date, scheduled_time: s.scheduled_time?.slice(0,5) ?? '', est_volume_kg: s.est_volume_kg ?? '', notes: s.notes ?? '' })
   showEditModal.value = true
 }
 
@@ -98,7 +98,7 @@ async function submitEdit() {
   await supabase.from('pickup_schedules').update({
     member_id: editForm.member_id, scheduled_date: editForm.scheduled_date,
     scheduled_time: editForm.scheduled_time || null,
-    est_volume_liter: editForm.est_volume_liter ? Number(editForm.est_volume_liter) : null,
+    est_volume_kg: editForm.est_volume_kg ? Number(editForm.est_volume_kg) : null,
     notes: editForm.notes || null, updated_at: new Date().toISOString(),
   }).eq('id', editForm.id)
   showEditModal.value = false; modalLoading.value = false; refresh()
@@ -253,7 +253,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
                 </span>
                 <span v-else class="text-gray-300">—</span>
               </td>
-              <td class="py-3 px-4 text-gray-600">{{ s.est_volume_liter ? s.est_volume_liter + ' L' : '—' }}</td>
+              <td class="py-3 px-4 text-gray-600">{{ s.est_volume_kg ? s.est_volume_kg + ' L' : '—' }}</td>
               <td class="py-3 px-4">
                 <span
                   class="text-xs font-medium px-2 py-1 rounded-lg"
@@ -323,7 +323,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
               <div class="flex gap-3">
                 <div class="bg-gray-50 rounded-xl px-3 py-2 text-center">
                   <p class="text-xs text-gray-400">Volume</p>
-                  <p class="font-bold text-gray-800">{{ report.actual_volume_liter }} L</p>
+                  <p class="font-bold text-gray-800">{{ report.actual_volume_kg }} L</p>
                 </div>
                 <div class="bg-red-50 rounded-xl px-3 py-2 text-center">
                   <p class="text-xs text-red-400">Dibayar ke Member</p>
@@ -377,7 +377,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Est. Volume (L)</label>
-            <input v-model="form.est_volume_liter" type="number" placeholder="Contoh: 10" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <input v-model="form.est_volume_kg" type="number" placeholder="Contoh: 10" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Catatan</label>
@@ -424,7 +424,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Est. Volume (L)</label>
-            <input v-model="editForm.est_volume_liter" type="number" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <input v-model="editForm.est_volume_kg" type="number" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Catatan</label>

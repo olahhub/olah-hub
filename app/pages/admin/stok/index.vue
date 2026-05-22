@@ -12,17 +12,17 @@ const { data: ledger } = await useAsyncData(`stock-ledger`, async () => {
 })
 
 const totalStok = computed(() => {
-  const masuk = ledger.value?.filter(l => l.type === 'in').reduce((a, b) => a + Number(b.volume_liter), 0) ?? 0
-  const keluar = ledger.value?.filter(l => l.type === 'out').reduce((a, b) => a + Number(b.volume_liter), 0) ?? 0
+  const masuk = ledger.value?.filter(l => l.type === 'in').reduce((a, b) => a + Number(b.volume_kg), 0) ?? 0
+  const keluar = ledger.value?.filter(l => l.type === 'out').reduce((a, b) => a + Number(b.volume_kg), 0) ?? 0
   return masuk - keluar
 })
 
 const totalMasuk = computed(() =>
-  ledger.value?.filter(l => l.type === 'in').reduce((a, b) => a + Number(b.volume_liter), 0) ?? 0
+  ledger.value?.filter(l => l.type === 'in').reduce((a, b) => a + Number(b.volume_kg), 0) ?? 0
 )
 
 const totalKeluar = computed(() =>
-  ledger.value?.filter(l => l.type === 'out').reduce((a, b) => a + Number(b.volume_liter), 0) ?? 0
+  ledger.value?.filter(l => l.type === 'out').reduce((a, b) => a + Number(b.volume_kg), 0) ?? 0
 )
 
 const selectedFilter = ref('all')
@@ -54,17 +54,17 @@ function formatDate(date: string) {
       <div class="rounded-2xl p-4 shadow-sm" style="background:linear-gradient(135deg,#16a34a,#15803d)">
         <p class="text-xs text-green-200 uppercase tracking-wide mb-2">Stok Saat Ini</p>
         <p class="text-3xl font-bold text-white">{{ totalStok.toFixed(1) }}</p>
-        <p class="text-xs text-green-200 mt-1">Liter tersedia</p>
+        <p class="text-xs text-green-200 mt-1">kg tersedia</p>
       </div>
       <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
         <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Total Masuk</p>
         <p class="text-3xl font-bold text-gray-800">{{ totalMasuk.toFixed(1) }}</p>
-        <p class="text-xs text-gray-400 mt-1">Liter diterima</p>
+        <p class="text-xs text-gray-400 mt-1">kg diterima</p>
       </div>
       <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
         <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Total Keluar</p>
         <p class="text-3xl font-bold text-gray-800">{{ totalKeluar.toFixed(1) }}</p>
-        <p class="text-xs text-gray-400 mt-1">Liter terjual</p>
+        <p class="text-xs text-gray-400 mt-1">kg terjual</p>
       </div>
     </div>
 
@@ -108,7 +108,7 @@ function formatDate(date: string) {
               </span>
             </td>
             <td class="py-3 px-4 font-bold" :style="l.type === 'in' ? 'color:#16a34a' : 'color:#dc2626'">
-              {{ l.type === 'in' ? '+' : '-' }}{{ l.volume_liter }} L
+              {{ l.type === 'in' ? '+' : '-' }}{{ l.volume_kg }} L
             </td>
             <td class="py-3 px-4 text-xs capitalize" style="color:#374151">{{ l.reference_type }}</td>
             <td class="py-3 px-4 text-xs" style="color:#6b7280">{{ l.notes ?? '—' }}</td>

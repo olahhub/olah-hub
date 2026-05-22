@@ -4,7 +4,7 @@ definePageMeta({ layout: 'default' })
 const supabase = useSupabaseClient()
 
 const { data: stockData } = await useAsyncData('dash-stock', async () => {
-  const { data } = await supabase.from('stock_ledger').select('type, volume_liter, created_at')
+  const { data } = await supabase.from('stock_ledger').select('type, volume_kg, created_at')
   return data ?? []
 })
 
@@ -21,13 +21,13 @@ const { data: pendingReports } = await useAsyncData('dash-pending', async () => 
 const { data: saleData } = await useAsyncData('dash-sales', async () => {
   const { data } = await supabase
     .from('sale_transactions')
-    .select('total_amount, volume_liter, sale_date, payment_status')
+    .select('total_amount, volume_kg, sale_date, payment_status')
   return data ?? []
 })
 
 const totalStok = computed(() => {
-  const masuk = stockData.value?.filter(s => s.type === 'in').reduce((a, b) => a + Number(b.volume_liter), 0) ?? 0
-  const keluar = stockData.value?.filter(s => s.type === 'out').reduce((a, b) => a + Number(b.volume_liter), 0) ?? 0
+  const masuk = stockData.value?.filter(s => s.type === 'in').reduce((a, b) => a + Number(b.volume_kg), 0) ?? 0
+  const keluar = stockData.value?.filter(s => s.type === 'out').reduce((a, b) => a + Number(b.volume_kg), 0) ?? 0
   return masuk - keluar
 })
 
@@ -85,7 +85,7 @@ const weeklyVolume = computed(() => {
         const localDay = String(localDate.getDate()).padStart(2, '0')
         return `${localYear}-${localMonth}-${localDay}` === dateStr
       })
-      .reduce((a, b) => a + Number(b.volume_liter), 0) ?? 0
+      .reduce((a, b) => a + Number(b.volume_kg), 0) ?? 0
     
     return { label, volume }
   })
@@ -189,7 +189,7 @@ function barHeight(value: number, data: number[]) {
           </div>
         </div>
         <p class="text-2xl font-bold text-white">{{ totalStok.toFixed(1) }} <span class="text-lg font-normal text-orange-200">L</span></p>
-        <p class="text-xs text-orange-200 mt-1">Liter tersedia</p>
+        <p class="text-xs text-orange-200 mt-1">kg tersedia</p>
       </div>
     </div>
 
@@ -200,7 +200,7 @@ function barHeight(value: number, data: number[]) {
       <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
         <div class="mb-4">
           <h3 class="text-sm font-semibold text-gray-700">Volume Pengambilan</h3>
-          <p class="text-xs text-gray-400">Minggu ini (liter)</p>
+          <p class="text-xs text-gray-400">Minggu ini (kg)</p>
         </div>
         <div class="flex items-end gap-2" style="height:120px">
           <div

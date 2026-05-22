@@ -13,7 +13,7 @@ const { data: report } = await useAsyncData('report', async () => {
       members(full_name, address),
       kurir:users!pickup_reports_kurir_id_fkey(full_name),
       pickup_photos(id, storage_path, photo_lat, photo_lng, taken_at),
-      pickup_schedules(scheduled_date, scheduled_time, est_volume_liter)
+      pickup_schedules(scheduled_date, scheduled_time, est_volume_kg)
     `)
     .eq('id', route.params.id)
     .single()
@@ -117,15 +117,15 @@ onMounted(async () => {
             <hr class="border-gray-100" />
             <div class="flex justify-between">
               <span class="text-gray-500">Est. Volume</span>
-              <span class="font-medium">{{ report.pickup_schedules?.est_volume_liter ?? '-' }} L</span>
+              <span class="font-medium">{{ report.pickup_schedules?.est_volume_kg ?? '-' }} L</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-500">Volume Aktual</span>
-              <span class="font-bold text-green-600 text-base">{{ report.actual_volume_liter }} L</span>
+              <span class="font-bold text-green-600 text-base">{{ report.actual_volume_kg }} L</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-500">Harga per Liter</span>
-              <span class="font-medium">{{ formatRupiah(report.price_per_liter) }}</span>
+              <span class="text-gray-500">Harga per kg</span>
+              <span class="font-medium">{{ formatRupiah(report.price_per_kg) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-500">Total Dibayar ke Member</span>

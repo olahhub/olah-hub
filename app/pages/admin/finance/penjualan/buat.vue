@@ -13,21 +13,21 @@ const { data: offtakers } = await useAsyncData('offtakers-sale', async () => {
 })
 
 const { data: stockData } = await useAsyncData('stock-now', async () => {
-  const { data } = await supabase.from('stock_ledger').select('type, volume_liter')
+  const { data } = await supabase.from('stock_ledger').select('type, volume_kg')
   return data ?? []
 })
 
 const stokSaatIni = computed(() => {
   if (!stockData.value) return 0
-  const masuk = stockData.value.filter(s => s.type === 'in').reduce((a, b) => a + Number(b.volume_liter), 0)
-  const keluar = stockData.value.filter(s => s.type === 'out').reduce((a, b) => a + Number(b.volume_liter), 0)
+  const masuk = stockData.value.filter(s => s.type === 'in').reduce((a, b) => a + Number(b.volume_kg), 0)
+  const keluar = stockData.value.filter(s => s.type === 'out').reduce((a, b) => a + Number(b.volume_kg), 0)
   return masuk - keluar
 })
 
 const form = reactive({
   offtaker_id: '',
-  volume_liter: '',
-  price_per_liter: '',
+  volume_kg: '',
+  price_per_kg: '',
   sale_date: new Date().toISOString().split('T')[0],
   notes: '',
 })
@@ -36,8 +36,8 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 const totalAmount = computed(() => {
-  if (!form.volume_liter || !form.price_per_liter) return 0
-  return Number(form.volume_liter) * Number(form.price_per_liter)
+  if (!form.volume_kg || !form.price_per_kg) return 0
+  return Number(form.volume_kg) * Number(form.price_per_kg)
 })
 
 function formatRupiah(amount: number) {
@@ -51,20 +51,20 @@ async function onOfftakerChange() {
   if (!form.offtaker_id) return
   const { data } = await supabase
     .from('sell_price_configs')
-    .select('price_per_liter')
+    .select('price_per_kg')
     .eq('offtaker_id', form.offtaker_id)
     .order('effective_date', { ascending: false })
     .limit(1)
     .single()
-  if (data) form.price_per_liter = data.price_per_liter.toString()
+  if (data) form.price_per_kg = data.price_per_kg.toString()
 }
 
 async function submit() {
-  if (!form.offtaker_id || !form.volume_liter || !form.price_per_liter) {
+  if (!form.offtaker_id || !form.volume_kg || !form.price_per_kg) {
     errorMsg.value = 'Semua field wajib diisi'
     return
   }
-  if (Number(form.volume_liter) > stokSaatIni.value) {
+  if (Number(form.volume_kg) > stokSaatIni.value) {
     errorMsg.value = `Volume melebihi stok tersedia (${stokSaatIni.value.toFixed(1)} L)`
     return
   }
@@ -76,8 +76,8 @@ async function submit() {
 
   const { error } = await supabase.from('sale_transactions').insert({
     offtaker_id: form.offtaker_id,
-    volume_liter: Number(form.volume_liter),
-    price_per_liter: Number(form.price_per_liter),
+    volume_kg: Number(form.volume_kg),
+    price_per_kg: Number(form.price_per_kg),
     total_amount: totalAmount.value,
     sale_date: form.sale_date,
     notes: form.notes || null,
@@ -119,12 +119,12 @@ async function submit() {
           </select>
         </UFormGroup>
 
-        <UFormGroup label="Volume (Liter)" required>
-          <UInput v-model="form.volume_liter" type="number" step="0.1" placeholder="0" />
+        <UFormGroup label="Volume (kg)" required>
+          <UInput v-model="form.volume_kg" type="number" step="0.1" placeholder="0" />
         </UFormGroup>
 
-        <UFormGroup label="Harga per Liter (Rp)" required>
-          <UInput v-model="form.price_per_liter" type="number" placeholder="0" />
+        <UFormGroup label="Harga per kg (Rp)" required>
+          <UInput v-model="form.price_per_kg" type="number" placeholder="0" />
         </UFormGroup>
 
         <div v-if="totalAmount > 0" class="bg-green-50 rounded-xl p-4 border border-green-100">

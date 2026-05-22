@@ -99,7 +99,7 @@ async function openDetail(m: any) {
   showDetailModal.value = true
   const { data: history } = await supabase
     .from('pickup_reports')
-    .select('id, actual_volume_liter, total_paid, status, submitted_at, pickup_schedules(scheduled_date)')
+    .select('id, actual_volume_kg, total_paid, status, submitted_at, pickup_schedules(scheduled_date)')
     .eq('member_id', m.id)
     .order('submitted_at', { ascending: false })
     .limit(5)
@@ -107,7 +107,7 @@ async function openDetail(m: any) {
 
   const { data: price } = await supabase
     .from('buy_price_configs')
-    .select('price_per_liter, effective_date, min_volume, max_volume')
+    .select('price_per_kg, effective_date, min_volume, max_volume')
     .eq('member_id', m.id)
     .order('effective_date', { ascending: false })
   detailPrice.value = price ?? []
@@ -128,7 +128,7 @@ function formatDate(date: string) {
 }
 
 const totalVolumeMember = computed(() =>
-  detailHistory.value.filter(h => h.status === 'approved').reduce((a, b) => a + Number(b.actual_volume_liter), 0)
+  detailHistory.value.filter(h => h.status === 'approved').reduce((a, b) => a + Number(b.actual_volume_kg), 0)
 )
 
 function bonusLabel(distance_km: number | null) {
@@ -500,7 +500,7 @@ watch(showMapModal, async (val) => {
                     {{ p.max_volume ? '— ' + p.max_volume + 'L' : '— ke atas' }}
                   </span>
                 </div>
-                <span class="text-sm font-bold" style="color:#16a34a">{{ formatRupiah(p.price_per_liter) }}/L</span>
+                <span class="text-sm font-bold" style="color:#16a34a">{{ formatRupiah(p.price_per_kg) }}/L</span>
               </div>
             </div>
           </div>
@@ -513,7 +513,7 @@ watch(showMapModal, async (val) => {
               <div v-for="h in detailHistory" :key="h.id" class="flex items-center justify-between py-2 border-b border-gray-50">
                 <div>
                   <p class="text-sm font-medium text-gray-800">{{ formatDate(h.pickup_schedules?.scheduled_date) }}</p>
-                  <p class="text-xs text-gray-400">{{ h.actual_volume_liter }} L · {{ formatRupiah(h.total_paid) }}</p>
+                  <p class="text-xs text-gray-400">{{ h.actual_volume_kg }} L · {{ formatRupiah(h.total_paid) }}</p>
                 </div>
                 <span class="text-xs font-medium px-2 py-1 rounded-lg"
                   :style="h.status === 'approved' ? 'background:#f0fdf4;color:#16a34a' : h.status === 'rejected' ? 'background:#fef2f2;color:#dc2626' : 'background:#fffbeb;color:#d97706'"

@@ -18,7 +18,7 @@ const { data: history } = await useAsyncData('member-history', async () => {
   const { data } = await supabase
     .from('pickup_reports')
     .select(`
-      id, actual_volume_liter, total_paid, status, submitted_at,
+      id, actual_volume_kg, total_paid, status, submitted_at,
       pickup_schedules(scheduled_date)
     `)
     .eq('member_id', route.params.id)
@@ -29,7 +29,7 @@ const { data: history } = await useAsyncData('member-history', async () => {
 const { data: activePrice } = await useAsyncData('member-price', async () => {
   const { data } = await supabase
     .from('buy_price_configs')
-    .select('price_per_liter, effective_date')
+    .select('price_per_kg, effective_date')
     .eq('member_id', route.params.id)
     .order('effective_date', { ascending: false })
     .limit(1)
@@ -69,12 +69,12 @@ function formatDate(date: string) {
 
 const totalVolume = computed(() =>
   history.value?.filter(h => h.status === 'approved')
-    .reduce((a, b) => a + Number(b.actual_volume_liter), 0) ?? 0
+    .reduce((a, b) => a + Number(b.actual_volume_kg), 0) ?? 0
 )
 
 const historyColumns = [
   { key: 'scheduled_date', label: 'Tanggal' },
-  { key: 'actual_volume_liter', label: 'Volume (L)' },
+  { key: 'actual_volume_kg', label: 'Volume (L)' },
   { key: 'total_paid', label: 'Dibayar' },
   { key: 'status', label: 'Status' },
 ]
@@ -130,7 +130,7 @@ const historyColumns = [
             <div>
               <p class="text-gray-400">Harga Beli Aktif</p>
               <p class="font-bold text-green-600">
-                {{ activePrice ? formatRupiah(activePrice.price_per_liter) + '/L' : 'Belum diset' }}
+                {{ activePrice ? formatRupiah(activePrice.price_per_kg) + '/L' : 'Belum diset' }}
               </p>
             </div>
           </div>
@@ -186,8 +186,8 @@ const historyColumns = [
                 ? formatDate(row.pickup_schedules.scheduled_date)
                 : '-' }}
             </template>
-            <template #actual_volume_liter-data="{ row }">
-              {{ row.actual_volume_liter }} L
+            <template #actual_volume_kg-data="{ row }">
+              {{ row.actual_volume_kg }} L
             </template>
             <template #total_paid-data="{ row }">
               {{ formatRupiah(row.total_paid) }}

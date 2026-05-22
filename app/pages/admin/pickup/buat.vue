@@ -17,7 +17,7 @@ const form = reactive({
   member_id: '',
   scheduled_date: new Date().toISOString().split('T')[0],
   scheduled_time: '',
-  est_volume_liter: '',
+  est_volume_kg: '',
   notes: '',
 })
 
@@ -39,7 +39,7 @@ async function submit() {
     member_id: form.member_id,
     scheduled_date: form.scheduled_date,
     scheduled_time: form.scheduled_time || null,
-    est_volume_liter: form.est_volume_liter ? Number(form.est_volume_liter) : null,
+    est_volume_kg: form.est_volume_kg ? Number(form.est_volume_kg) : null,
     notes: form.notes || null,
     status: 'open',
     created_by: user.data.user?.id,
@@ -87,8 +87,8 @@ async function submit() {
           <UInput v-model="form.scheduled_time" type="time" />
         </UFormGroup>
 
-        <UFormGroup label="Estimasi Volume (Liter)">
-          <UInput v-model="form.est_volume_liter" type="number" placeholder="Contoh: 10" />
+        <UFormGroup label="Estimasi Volume (kg)">
+          <UInput v-model="form.est_volume_kg" type="number" placeholder="Contoh: 10" />
         </UFormGroup>
 
         <UFormGroup label="Catatan">

@@ -70,6 +70,7 @@ function formatNotifTime(date: string) {
 </script>
 
 <template>
+  <VitePwaManifest />
   <div class="min-h-screen flex bg-gray-50">
 
     <!-- Sidebar -->

@@ -16,7 +16,7 @@ const { data: kurirs } = await useAsyncData(
 const { data: kurirStats } = await useAsyncData('kurir-stats', async () => {
   const { data } = await supabase
     .from('pickup_reports')
-    .select('kurir_id, actual_volume_liter, status')
+    .select('kurir_id, actual_volume_kg, status')
     .eq('status', 'approved')
   return data ?? []
 })
@@ -31,7 +31,7 @@ const { data: serviceFees } = await useAsyncData('service-fees', async () => {
 function getKurirVolume(kurirId: string) {
   return kurirStats.value
     ?.filter(r => r.kurir_id === kurirId)
-    .reduce((a, b) => a + Number(b.actual_volume_liter), 0) ?? 0
+    .reduce((a, b) => a + Number(b.actual_volume_kg), 0) ?? 0
 }
 
 function getKurirFee(kurirId: string) {
@@ -51,7 +51,7 @@ function getKurirPendingFee(kurirId: string) {
 }
 
 const totalAktif = computed(() => kurirs.value?.filter(k => k.is_active).length ?? 0)
-const totalVolume = computed(() => kurirStats.value?.reduce((a, b) => a + Number(b.actual_volume_liter), 0) ?? 0)
+const totalVolume = computed(() => kurirStats.value?.reduce((a, b) => a + Number(b.actual_volume_kg), 0) ?? 0)
 const totalFee = computed(() => serviceFees.value?.reduce((a, b) => a + Number(b.total_fee), 0) ?? 0)
 const totalPendingFee = computed(() => serviceFees.value?.filter(f => f.status === 'pending').reduce((a, b) => a + Number(b.total_fee), 0) ?? 0)
 
@@ -109,7 +109,7 @@ async function openFeeDetail(kurir: any) {
     .select(`
       *,
       members(full_name, distance_km),
-      pickup_reports(actual_volume_liter, submitted_at, pickup_schedules(scheduled_date))
+      pickup_reports(actual_volume_kg, submitted_at, pickup_schedules(scheduled_date))
     `)
     .eq('kurir_id', kurir.id)
     .order('created_at', { ascending: false })
@@ -170,7 +170,7 @@ function formatDate(date: string) {
       <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
         <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">Total Volume</p>
         <p class="text-3xl font-bold text-gray-800">{{ totalVolume.toFixed(1) }}</p>
-        <p class="text-xs text-gray-400 mt-1">Liter dikumpulkan</p>
+        <p class="text-xs text-gray-400 mt-1">kg dikumpulkan</p>
       </div>
       <div class="rounded-2xl p-4 shadow-sm" style="background:linear-gradient(135deg,#ea580c,#c2410c)">
         <p class="text-xs text-orange-200 uppercase tracking-wide mb-2">Jasa Belum Bayar</p>
@@ -324,14 +324,14 @@ function formatDate(date: string) {
                     {{ formatDate(f.pickup_reports?.pickup_schedules?.scheduled_date) }}
                   </td>
                   <td class="py-2 px-3 font-medium" style="color:#1f2937">{{ f.members?.full_name }}</td>
-                  <td class="py-2 px-3" style="color:#374151">{{ f.volume_liter }} L</td>
+                  <td class="py-2 px-3" style="color:#374151">{{ f.volume_kg }} L</td>
                   <td class="py-2 px-3 text-xs" style="color:#374151">
                     {{ f.distance_km ? f.distance_km + ' km' : '—' }}
                   </td>
                   <td class="py-2 px-3">
                     <div class="text-xs">
-                      <span style="color:#374151">Rp{{ f.base_fee_per_liter }}/L</span>
-                      <span v-if="f.bonus_per_liter > 0" style="color:#16a34a" class="ml-1">+Rp{{ f.bonus_per_liter }}</span>
+                      <span style="color:#374151">Rp{{ f.base_fee_per_kg }}/L</span>
+                      <span v-if="f.bonus_per_kg > 0" style="color:#16a34a" class="ml-1">+Rp{{ f.bonus_per_kg }}</span>
                     </div>
                   </td>
                   <td class="py-2 px-3 font-bold" style="color:#16a34a">{{ formatRupiah(f.total_fee) }}</td>
