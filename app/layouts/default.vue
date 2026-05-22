@@ -4,10 +4,10 @@ const supabase = useSupabaseClient()
 const router = useRouter()
 
 const { data: { user } } = await supabase.auth.getUser()
-const { data: userData } = await supabase
+const { data: roleData } = await supabase
   .from('users')
-  .select('full_name, role')
-  .eq('id', user?.id)  // ← tambah ini
+  .select('role')
+  .eq('id', user?.id)
   .single()
 
 if (roleData?.role === 'kurir') {
@@ -27,6 +27,7 @@ watch(() => route.path, () => {
 const { data: userData } = await supabase
   .from('users')
   .select('full_name, role')
+  .eq('id', user?.id)  // ← tambah ini
   .single()
 
 const { data: notifications, refresh: refreshNotif } = await useAsyncData('notifs', async () => {
