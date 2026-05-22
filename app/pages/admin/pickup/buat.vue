@@ -87,7 +87,7 @@ async function submit() {
           <UInput v-model="form.scheduled_time" type="time" />
         </UFormGroup>
 
-        <UFormGroup label="Estimasi Volume (kg)">
+        <UFormGroup label="Estimasi Volume (Kg)">
           <UInput v-model="form.est_volume_kg" type="number" placeholder="Contoh: 10" />
         </UFormGroup>
 

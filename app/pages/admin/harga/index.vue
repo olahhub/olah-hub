@@ -189,7 +189,7 @@ const activeTab = ref('beli')
             <div>
               <p class="text-xs text-gray-400">Harga Aktif</p>
               <p class="text-lg font-bold" :style="getActiveBuyPrice(m.id) ? 'color:#16a34a' : 'color:#9ca3af'">
-                {{ getActiveBuyPrice(m.id) ? formatRupiah(getActiveBuyPrice(m.id)!.price_per_kg) + '/L' : 'Belum diset' }}
+                {{ getActiveBuyPrice(m.id) ? formatRupiah(getActiveBuyPrice(m.id)!.price_per_kg) + '/Kg' : 'Belum diset' }}
               </p>
               <p v-if="getActiveBuyPrice(m.id)" class="text-xs text-gray-400">
                 Sejak {{ formatDate(getActiveBuyPrice(m.id)!.effective_date) }}
@@ -215,7 +215,7 @@ const activeTab = ref('beli')
           <thead>
             <tr style="background-color:#f9fafb">
               <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Member</th>
-              <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Harga/L</th>
+              <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Harga/kg</th>
               <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Berlaku</th>
               <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Catatan</th>
               <th class="py-3 px-4"></th>
@@ -262,7 +262,7 @@ const activeTab = ref('beli')
             <div>
               <p class="text-xs text-gray-400">Harga Aktif</p>
               <p class="text-lg font-bold" :style="getActiveSellPrice(o.id) ? 'color:#ea580c' : 'color:#9ca3af'">
-                {{ getActiveSellPrice(o.id) ? formatRupiah(getActiveSellPrice(o.id)!.price_per_kg) + '/L' : 'Belum diset' }}
+                {{ getActiveSellPrice(o.id) ? formatRupiah(getActiveSellPrice(o.id)!.price_per_kg) + '/Kg' : 'Belum diset' }}
               </p>
               <p v-if="getActiveSellPrice(o.id)" class="text-xs text-gray-400">
                 Sejak {{ formatDate(getActiveSellPrice(o.id)!.effective_date) }}
@@ -288,7 +288,7 @@ const activeTab = ref('beli')
           <thead>
             <tr style="background-color:#f9fafb">
               <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Offtaker</th>
-              <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Harga/L</th>
+              <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Harga/kg</th>
               <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Berlaku</th>
               <th class="py-3 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wide">Catatan</th>
               <th class="py-3 px-4"></th>

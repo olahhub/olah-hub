@@ -253,7 +253,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
                 </span>
                 <span v-else class="text-gray-300">—</span>
               </td>
-              <td class="py-3 px-4 text-gray-600">{{ s.est_volume_kg ? s.est_volume_kg + ' L' : '—' }}</td>
+              <td class="py-3 px-4 text-gray-600">{{ s.est_volume_kg ? s.est_volume_kg + ' Kg' : '—' }}</td>
               <td class="py-3 px-4">
                 <span
                   class="text-xs font-medium px-2 py-1 rounded-lg"
