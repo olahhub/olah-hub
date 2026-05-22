@@ -23,7 +23,7 @@ const { data: monthlyData } = await useAsyncData('monthly-volume', async () => {
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const { data } = await supabase
     .from('pickup_reports')
-    .select('actual_volume_liter, status')
+    .select('actual_volume_kg, status')
     .eq('kurir_id', user.id)
     .eq('status', 'approved')
     .gte('submitted_at', firstDay)
@@ -41,7 +41,7 @@ const { data: openSchedules, refresh: refreshOpen } = await useAsyncData('open-s
 })
 
 const totalVolumeBulanIni = computed(() =>
-  monthlyData.value?.reduce((a, b) => a + Number(b.actual_volume_liter), 0) ?? 0
+  monthlyData.value?.reduce((a, b) => a + Number(b.actual_volume_kg), 0) ?? 0
 )
 
 function isClaimable(scheduledDate: string) {
@@ -207,7 +207,7 @@ async function cancelClaim(scheduleId: string) {
         <div class="bg-white bg-opacity-20 rounded-xl p-3">
           <p class="text-xs text-green-100 mb-1">Volume Bulan Ini</p>
           <p class="text-2xl font-bold">{{ totalVolumeBulanIni.toFixed(1) }}</p>
-          <p class="text-xs text-green-200">Liter terkumpul</p>
+          <p class="text-xs text-green-200">Kg terkumpul</p>
         </div>
         <!-- Jadwal Aktif -->
         <div class="bg-white bg-opacity-20 rounded-xl p-3">
@@ -267,7 +267,7 @@ async function cancelClaim(scheduleId: string) {
               📅 {{ formatDate(s.scheduled_date) }}
               <span v-if="s.scheduled_time">· {{ s.scheduled_time.slice(0,5) }}</span>
             </p>
-            <p v-if="s.est_volume_liter" class="text-xs text-gray-500 mb-3">Est. {{ s.est_volume_liter }} L</p>
+            <p v-if="s.est_volume_kg" class="text-xs text-gray-500 mb-3">Est. {{ s.est_volume_kg }} Kg</p>
 
             <p v-if="cancelError" class="text-xs text-red-500 mb-2">{{ cancelError }}</p>
 
@@ -344,7 +344,7 @@ async function cancelClaim(scheduleId: string) {
             <span v-if="s.scheduled_time">· {{ s.scheduled_time.slice(0,5) }}</span>
           </p>
           <div class="flex items-center justify-between mb-3">
-            <p v-if="s.est_volume_liter" class="text-xs text-gray-500">Est. {{ s.est_volume_liter }} L</p>
+            <p v-if="s.est_volume_kg" class="text-xs text-gray-500">Est. {{ s.est_volume_kg }} L</p>
             <p v-if="s.members?.distance_km" class="text-xs font-medium"
               :style="s.members.distance_km < 5 ? 'color:#9ca3af' : 'color:#16a34a'"
             >

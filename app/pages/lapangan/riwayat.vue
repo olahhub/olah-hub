@@ -71,7 +71,7 @@ const reimburseLabel: Record<string, string> = {
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div class="bg-gray-50 rounded-lg p-2">
             <p class="text-gray-400">Volume</p>
-            <p class="font-bold text-gray-700">{{ r.actual_volume_liter }} L</p>
+            <p class="font-bold text-gray-700">{{ r.actual_volume_kg }} L</p>
           </div>
           <div class="bg-gray-50 rounded-lg p-2">
             <p class="text-gray-400">Dibayar ke Member</p>
