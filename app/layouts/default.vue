@@ -3,7 +3,6 @@
 const supabase = useSupabaseClient()
 const router = useRouter()
 
-// Cek role — admin/finance only
 const { data: { user } } = await supabase.auth.getUser()
 const { data: roleData } = await supabase
   .from('users')
@@ -15,7 +14,15 @@ if (roleData?.role === 'kurir') {
   await navigateTo('/lapangan')
 }
 
+// Desktop: sidebar collapse. Mobile: drawer
 const sidebarOpen = ref(true)
+const mobileMenuOpen = ref(false)
+
+// Tutup drawer saat navigasi
+const route = useRoute()
+watch(() => route.path, () => {
+  mobileMenuOpen.value = false
+})
 
 const { data: userData } = await supabase
   .from('users')
@@ -73,9 +80,26 @@ function formatNotifTime(date: string) {
   <VitePwaManifest />
   <div class="min-h-screen flex bg-gray-50">
 
-    <!-- Sidebar -->
+    <!-- Overlay mobile (klik di luar untuk tutup drawer) -->
+    <Transition name="fade">
+      <div
+        v-if="mobileMenuOpen"
+        class="fixed inset-0 bg-black/40 z-40 md:hidden"
+        @click="mobileMenuOpen = false"
+      />
+    </Transition>
+
+    <!-- Sidebar (desktop: static, mobile: drawer) -->
     <aside
-      class="flex flex-col bg-white border-r border-gray-100 transition-all duration-300 flex-shrink-0"
+      class="flex flex-col bg-white border-r border-gray-100 transition-all duration-300 flex-shrink-0
+             fixed inset-y-0 left-0 z-50
+             md:static md:z-auto md:translate-x-0"
+      :class="[
+        // Mobile: tampil/sembunyi via translate
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
+        // Desktop: ikut sidebarOpen
+        'md:translate-x-0'
+      ]"
       :style="{ width: sidebarOpen ? '240px' : '64px' }"
     >
       <!-- Logo & Toggle -->
@@ -96,10 +120,11 @@ function formatNotifTime(date: string) {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
           </svg>
         </div>
+        <!-- Tombol tutup: desktop collapse, mobile tutup drawer -->
         <button
           v-if="sidebarOpen"
           class="p-1 rounded-lg hover:bg-gray-100 transition-colors text-gray-400"
-          @click="sidebarOpen = false"
+          @click="() => { if (window.innerWidth < 768) mobileMenuOpen = false; else sidebarOpen = false }"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -134,10 +159,10 @@ function formatNotifTime(date: string) {
           </svg>
           <span v-if="sidebarOpen" class="text-sm truncate">{{ item.label }}</span>
 
-          <!-- Tooltip saat collapsed -->
+          <!-- Tooltip saat collapsed (desktop only) -->
           <div
             v-if="!sidebarOpen"
-            class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 hidden md:block"
           >
             {{ item.label }}
           </div>
@@ -147,10 +172,10 @@ function formatNotifTime(date: string) {
       <!-- Bottom: notif + user -->
       <div class="border-t border-gray-100 p-2">
 
-        <!-- Toggle expand (saat collapsed) -->
+        <!-- Toggle expand (saat collapsed, desktop only) -->
         <button
           v-if="!sidebarOpen"
-          class="w-full flex justify-center py-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors mb-1"
+          class="w-full hidden md:flex justify-center py-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors mb-1"
           @click="sidebarOpen = true"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -237,11 +262,58 @@ function formatNotifTime(date: string) {
       </div>
     </aside>
 
-    <!-- Main -->
-    <main class="flex-1 overflow-auto min-w-0">
-      <div class="p-6">
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto min-w-0 flex flex-col">
+
+      <!-- Mobile Header (hamburger + judul halaman) -->
+      <header class="md:hidden sticky top-0 z-30 bg-white border-b border-gray-100 px-4 flex items-center gap-3" style="min-height:56px">
+        <button
+          class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+          @click="mobileMenuOpen = true"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md flex items-center justify-center" style="background-color:#16a34a">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+          </div>
+          <p class="text-sm font-bold text-gray-800">OlahHub</p>
+        </div>
+
+        <!-- Notif bell di mobile header -->
+        <button class="ml-auto relative p-2" @click="showNotif = !showNotif">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span
+            v-if="notifications?.length"
+            class="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold"
+            style="font-size:9px"
+          >
+            {{ notifications.length > 9 ? '9+' : notifications.length }}
+          </span>
+        </button>
+      </header>
+
+      <!-- Page Content -->
+      <div class="p-4 md:p-6 flex-1">
         <slot />
       </div>
     </main>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
