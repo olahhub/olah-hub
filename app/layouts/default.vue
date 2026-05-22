@@ -4,10 +4,10 @@ const supabase = useSupabaseClient()
 const router = useRouter()
 
 const { data: { user } } = await supabase.auth.getUser()
-const { data: roleData } = await supabase
+const { data: userData } = await supabase
   .from('users')
-  .select('role')
-  .eq('id', user?.id)
+  .select('full_name, role')
+  .eq('id', user?.id)  // ← tambah ini
   .single()
 
 if (roleData?.role === 'kurir') {
