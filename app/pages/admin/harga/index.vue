@@ -48,13 +48,13 @@ const buyLoading = ref(false)
 const buyError = ref('')
 const buyForm = reactive({
   member_id: '',
-  price_per_liter: '',
+  price_per_kg: '',
   effective_date: new Date().toISOString().split('T')[0],
   notes: '',
 })
 
 async function saveBuyPrice() {
-  if (!buyForm.member_id || !buyForm.price_per_liter) {
+  if (!buyForm.member_id || !buyForm.price_per_kg) {
     buyError.value = 'Member dan harga wajib diisi'
     return
   }
@@ -63,14 +63,14 @@ async function saveBuyPrice() {
   const { data: { user } } = await supabase.auth.getUser()
   const { error } = await supabase.from('buy_price_configs').insert({
     member_id: buyForm.member_id,
-    price_per_liter: Number(buyForm.price_per_liter),
+    price_per_kg: Number(buyForm.price_per_kg),
     effective_date: buyForm.effective_date,
     notes: buyForm.notes || null,
     created_by: user?.id,
   })
   if (error) { buyError.value = 'Gagal menyimpan'; buyLoading.value = false; return }
   showBuyModal.value = false
-  Object.assign(buyForm, { member_id: '', price_per_liter: '', notes: '', effective_date: new Date().toISOString().split('T')[0] })
+  Object.assign(buyForm, { member_id: '', price_per_kg: '', notes: '', effective_date: new Date().toISOString().split('T')[0] })
   buyLoading.value = false
   refreshBuy()
 }
@@ -81,13 +81,13 @@ const sellLoading = ref(false)
 const sellError = ref('')
 const sellForm = reactive({
   offtaker_id: '',
-  price_per_liter: '',
+  price_per_kg: '',
   effective_date: new Date().toISOString().split('T')[0],
   notes: '',
 })
 
 async function saveSellPrice() {
-  if (!sellForm.offtaker_id || !sellForm.price_per_liter) {
+  if (!sellForm.offtaker_id || !sellForm.price_per_kg) {
     sellError.value = 'Offtaker dan harga wajib diisi'
     return
   }
@@ -96,14 +96,14 @@ async function saveSellPrice() {
   const { data: { user } } = await supabase.auth.getUser()
   const { error } = await supabase.from('sell_price_configs').insert({
     offtaker_id: sellForm.offtaker_id,
-    price_per_liter: Number(sellForm.price_per_liter),
+    price_per_kg: Number(sellForm.price_per_kg),
     effective_date: sellForm.effective_date,
     notes: sellForm.notes || null,
     created_by: user?.id,
   })
   if (error) { sellError.value = 'Gagal menyimpan'; sellLoading.value = false; return }
   showSellModal.value = false
-  Object.assign(sellForm, { offtaker_id: '', price_per_liter: '', notes: '', effective_date: new Date().toISOString().split('T')[0] })
+  Object.assign(sellForm, { offtaker_id: '', price_per_kg: '', notes: '', effective_date: new Date().toISOString().split('T')[0] })
   sellLoading.value = false
   refreshSell()
 }
@@ -189,7 +189,7 @@ const activeTab = ref('beli')
             <div>
               <p class="text-xs text-gray-400">Harga Aktif</p>
               <p class="text-lg font-bold" :style="getActiveBuyPrice(m.id) ? 'color:#16a34a' : 'color:#9ca3af'">
-                {{ getActiveBuyPrice(m.id) ? formatRupiah(getActiveBuyPrice(m.id)!.price_per_liter) + '/L' : 'Belum diset' }}
+                {{ getActiveBuyPrice(m.id) ? formatRupiah(getActiveBuyPrice(m.id)!.price_per_kg) + '/L' : 'Belum diset' }}
               </p>
               <p v-if="getActiveBuyPrice(m.id)" class="text-xs text-gray-400">
                 Sejak {{ formatDate(getActiveBuyPrice(m.id)!.effective_date) }}
@@ -227,7 +227,7 @@ const activeTab = ref('beli')
             </tr>
             <tr v-for="p in buyPrices" :key="p.id" class="border-t border-gray-50 hover:bg-gray-50">
               <td class="py-3 px-4 font-medium" style="color:#1f2937">{{ p.members?.full_name }}</td>
-              <td class="py-3 px-4 font-bold" style="color:#16a34a">{{ formatRupiah(p.price_per_liter) }}</td>
+              <td class="py-3 px-4 font-bold" style="color:#16a34a">{{ formatRupiah(p.price_per_kg) }}</td>
               <td class="py-3 px-4" style="color:#374151">{{ formatDate(p.effective_date) }}</td>
               <td class="py-3 px-4 text-gray-400">{{ p.notes ?? '—' }}</td>
               <td class="py-3 px-4">
@@ -262,7 +262,7 @@ const activeTab = ref('beli')
             <div>
               <p class="text-xs text-gray-400">Harga Aktif</p>
               <p class="text-lg font-bold" :style="getActiveSellPrice(o.id) ? 'color:#ea580c' : 'color:#9ca3af'">
-                {{ getActiveSellPrice(o.id) ? formatRupiah(getActiveSellPrice(o.id)!.price_per_liter) + '/L' : 'Belum diset' }}
+                {{ getActiveSellPrice(o.id) ? formatRupiah(getActiveSellPrice(o.id)!.price_per_kg) + '/L' : 'Belum diset' }}
               </p>
               <p v-if="getActiveSellPrice(o.id)" class="text-xs text-gray-400">
                 Sejak {{ formatDate(getActiveSellPrice(o.id)!.effective_date) }}
@@ -300,7 +300,7 @@ const activeTab = ref('beli')
             </tr>
             <tr v-for="p in sellPrices" :key="p.id" class="border-t border-gray-50 hover:bg-gray-50">
               <td class="py-3 px-4 font-medium" style="color:#1f2937">{{ p.offtakers?.company_name }}</td>
-              <td class="py-3 px-4 font-bold" style="color:#ea580c">{{ formatRupiah(p.price_per_liter) }}</td>
+              <td class="py-3 px-4 font-bold" style="color:#ea580c">{{ formatRupiah(p.price_per_kg) }}</td>
               <td class="py-3 px-4" style="color:#374151">{{ formatDate(p.effective_date) }}</td>
               <td class="py-3 px-4 text-gray-400">{{ p.notes ?? '—' }}</td>
               <td class="py-3 px-4">
@@ -336,8 +336,8 @@ const activeTab = ref('beli')
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga per Liter (Rp) <span class="text-red-500">*</span></label>
-            <input v-model="buyForm.price_per_liter" type="number" placeholder="Contoh: 3000" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga per kg (Rp) <span class="text-red-500">*</span></label>
+            <input v-model="buyForm.price_per_kg" type="number" placeholder="Contoh: 3000" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Berlaku Mulai</label>
@@ -378,8 +378,8 @@ const activeTab = ref('beli')
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga per Liter (Rp) <span class="text-red-500">*</span></label>
-            <input v-model="sellForm.price_per_liter" type="number" placeholder="Contoh: 8000" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga per kg (Rp) <span class="text-red-500">*</span></label>
+            <input v-model="sellForm.price_per_kg" type="number" placeholder="Contoh: 8000" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5">Berlaku Mulai</label>
